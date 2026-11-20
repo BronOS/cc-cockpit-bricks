@@ -1,0 +1,8 @@
+{
+  "name": "cc-cockpit-bricks",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bricks: a paddle-and-ball brick game panel for cc-cockpit",
+  "license": "MIT",
+  "scripts": { "test": "node --test test/" }
+}

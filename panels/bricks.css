@@ -1,0 +1,173 @@
+/* Bricks panel. The page's frame, text and controls take the app's theme variables (ccc guide panels), so light and
+   dark themes and any plugin theme work. The board has its own palette, one per theme kind through light-dark() (the
+   SDK sets `color-scheme` on :root to the theme's kind); bricks.js reads it back from the probes in #palette. A brick's
+   strength never rests on its colour alone: a brick that takes more than one hit carries one notch per hit left. */
+
+html,
+body {
+  margin: 0;
+  background: var(--cc-bg);
+  color: var(--cc-fg);
+  font: var(--cc-text-m) / 1.4 var(--cc-font-ui);
+}
+* {
+  box-sizing: border-box;
+}
+/* Plugin pages get no reset: a class rule with a display beats the hidden attribute (the empty size menu Mines
+   showed), so hidden always wins here. */
+[hidden] {
+  display: none !important;
+}
+
+:root {
+  /* The board: a well darker than the page in dark themes, a step darker than the page in light ones. */
+  --k-board: light-dark(color-mix(in srgb, var(--cc-bg), var(--cc-fg) 8%), color-mix(in srgb, var(--cc-bg), #000 35%));
+  --k-ball: light-dark(var(--cc-fg), #ffffff);
+  --k-paddle: light-dark(var(--cc-fg), #d6d7dc);
+  /* The wide paddle's outline (its width says it too). */
+  --k-wide: var(--cc-status-waiting);
+  --k-hint: var(--cc-fg-muted);
+  --k-flash: light-dark(#ffffff, #ffffff);
+  --k-notch: #ffffffdd;
+  --k-cap-bg: light-dark(var(--cc-fg), #f5f5f5);
+  --k-cap-fg: light-dark(var(--cc-bg), #17181c);
+  /* One-hit bricks in five hues; the light set is deeper so it holds on a light board. */
+  --k-a: light-dark(#3d6fd9, #7aa2f7);
+  --k-b: light-dark(#4f8a2a, #9ece6a);
+  --k-c: light-dark(#b8740c, #e0af68);
+  --k-d: light-dark(#c9405c, #f7768e);
+  --k-e: light-dark(#8a5cd6, #bb9af7);
+  /* Strong bricks: greys, told apart by their white notches (one per hit left), never by the shade. */
+  --k-2: light-dark(#6b7080, #8b8fa3);
+  --k-3: light-dark(#40444f, #b0b4c6);
+}
+.palette i[data-k='ball'] { color: var(--k-ball); }
+.palette i[data-k='paddle'] { color: var(--k-paddle); }
+.palette i[data-k='wide'] { color: var(--k-wide); }
+.palette i[data-k='hint'] { color: var(--k-hint); }
+.palette i[data-k='flash'] { color: var(--k-flash); }
+.palette i[data-k='notch'] { color: var(--k-notch); }
+.palette i[data-k='capBg'] { color: var(--k-cap-bg); }
+.palette i[data-k='capFg'] { color: var(--k-cap-fg); }
+.palette i[data-k='a'] { color: var(--k-a); }
+.palette i[data-k='b'] { color: var(--k-b); }
+.palette i[data-k='c'] { color: var(--k-c); }
+.palette i[data-k='d'] { color: var(--k-d); }
+.palette i[data-k='e'] { color: var(--k-e); }
+.palette i[data-k='2'] { color: var(--k-2); }
+.palette i[data-k='3'] { color: var(--k-3); }
+
+.bricks {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-2) var(--cc-space-3);
+  font-variant-numeric: tabular-nums;
+}
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cc-space-1);
+  font-weight: 600;
+}
+.stat small {
+  color: var(--cc-fg-muted);
+  font-weight: 400;
+  font-size: var(--cc-text-s);
+}
+.grow {
+  flex: 1;
+}
+.lives {
+  display: flex;
+  gap: 3px;
+}
+.lives i {
+  width: 14px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--cc-fg);
+  display: inline-block;
+}
+
+/* The board fills the width at 3:4, but in a short panel (a bottom zone) it shrinks to the height left, not past
+   150 px wide. */
+.stage {
+  position: relative;
+  width: min(100% - 2 * var(--cc-space-3), max(150px, (100vh - 84px) * 0.75));
+  margin: 0 auto var(--cc-space-2);
+}
+canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 8px;
+  background: var(--k-board);
+  outline: none;
+  cursor: none;
+  touch-action: none;
+  user-select: none;
+}
+canvas:focus-visible {
+  box-shadow: 0 0 0 2px var(--cc-focus);
+}
+.stage .cc-empty {
+  position: absolute;
+  inset: 0;
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cc-bg) 88%, transparent);
+  border: 1px solid var(--cc-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cc-space-2);
+  text-align: center;
+  padding: var(--cc-space-3);
+}
+.cover .big {
+  font-size: var(--cc-text-l);
+  font-weight: 700;
+}
+.cover .what {
+  color: var(--cc-fg-muted);
+  overflow-wrap: anywhere;
+}
+.cover .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cc-status-waiting);
+  display: inline-block;
+  margin-right: 6px;
+}
+.cover .buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--cc-space-2);
+}
+
+.foot {
+  padding: 0 var(--cc-space-3) var(--cc-space-3);
+  color: var(--cc-fg-muted);
+  font-size: var(--cc-text-s);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--cc-space-1) var(--cc-space-3);
+  font-variant-numeric: tabular-nums;
+}

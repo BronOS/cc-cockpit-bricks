@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bricks</title>
+    <!-- CSP: scripts only from this plugin's own files, so the code is in ../lib/rules.js (the game), view.js (pure
+         helpers) and bricks.js (the canvas, the loop and the input). -->
+    <script src="../__sdk/panel.js"></script>
+    <link rel="stylesheet" href="bricks.css" />
+    <script src="../lib/rules.js"></script>
+    <script src="view.js"></script>
+    <script src="bricks.js" defer></script>
+  </head>
+  <body>
+    <div class="bricks">
+      <div class="bar">
+        <span class="stat"><small>Score</small><b id="score">0</b></span>
+        <span class="stat" title="Best score at this speed"><small>Best</small><b id="best">0</b></span>
+        <span class="grow"></span>
+        <span class="lives" id="lives" role="img" aria-label="3 balls left" title="3 balls left"></span>
+      </div>
+      <div class="stage" id="stage">
+        <canvas id="board" tabindex="0" aria-label="Bricks: the mouse or arrows (A D) move the paddle, Space launches and pauses, P pauses, N starts a new game"></canvas>
+        <div class="cc-empty" id="loading"><span class="cc-spinner"></span></div>
+        <div class="cover" id="cover" hidden></div>
+      </div>
+      <div class="foot"><span>Mouse or ← → · Space launches / pauses</span><span id="info"></span></div>
+      <!-- The canvas's colours: each probe takes one palette colour from bricks.css (light or dark by the theme), and
+           bricks.js reads them back as computed colours. -->
+      <div class="palette" id="palette" hidden>
+        <i data-k="ball"></i><i data-k="paddle"></i><i data-k="wide"></i><i data-k="hint"></i><i data-k="flash"></i>
+        <i data-k="notch"></i><i data-k="capBg"></i><i data-k="capFg"></i><i data-k="a"></i><i data-k="b"></i>
+        <i data-k="c"></i><i data-k="d"></i><i data-k="e"></i><i data-k="2"></i><i data-k="3"></i>
+      </div>
+    </div>
+  </body>
+</html>
